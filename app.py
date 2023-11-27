@@ -47,8 +47,9 @@ def getPolygonDF(ticker , startdate , enddate , intervalperiod , window, window2
     DF['SMA2'] = DF.c.rolling(window=window2).mean()
     return DF
 
-def get_hvplot(ticker , startdate , enddate , interval,window,window2):
-    DF = getPolygonDF(ticker , startdate=startdate , enddate=enddate , intervalperiod=interval,window=window,window2=window2)
+def get_hvplot(ticker , startdate ,  interval,window,window2):
+    date_end = date_start.value + timedelta(days=1) # date.today()
+    DF = getPolygonDF(ticker , startdate=startdate , enddate=date_end , intervalperiod=interval,window=window,window2=window2)
 
     import hvplot.pandas  # Ensure hvplot is installed (pip install hvplot)
 
@@ -67,7 +68,7 @@ def get_hvplot(ticker , startdate , enddate , interval,window,window2):
 tickers = ['AAPL', 'META', 'GOOG', 'IBM', 'MSFT','NKE','DLTR','DG']
 # ticker = pn.widgets.Select(name='Ticker', options=tickers)
 
-# tickers = pd.read_csv('tickers.csv').Ticker.to_list()
+# tickers = pd.read_csv('tickers2.csv').Ticker.to_list()
 ticker = pn.widgets.AutocompleteInput(name='Ticker', options=tickers , placeholder='Write Ticker here همین جا')
 ticker.value = "AAPL"
 window = pn.widgets.IntSlider(name='Window Size', value=50, start=5, end=1000, step=5)
@@ -80,20 +81,22 @@ date_start = pn.widgets.DatePicker(
     start= date.today() - timedelta(days=365 * 2)
 )
 
-date_end = pn.widgets.DatePicker(
-    name ="End Date",# value=datetime(2000, 1, 1),
-    description='Select a Date',
-    end= date.today() - timedelta(days=365 * 2) + timedelta(days=1)  #date.today() #date(2023, 9, 1)
-)
+# date_end = pn.widgets.DatePicker(
+#     name ="End Date",# value=datetime(2000, 1, 1),
+#     description='Select a Date',
+#     end= date.today() - timedelta(days=365 * 2) + timedelta(days=1)  #date.today() #date(2023, 9, 1)
+# )
 
-date_start.value = date.today() - timedelta(days=35 * 2)
-date_end.value = date_start.value + timedelta(days=1) # date.today()
+date_start.value = date.today() - timedelta(days=200 * 2)
+# date_end = date_start.value + timedelta(days=1) # date.today()
+
+menu_button = pn.widgets.Select(name='Time Frame (min)', options=['1', '5', '10'])
 
 pn.Row(
-    pn.Column( ticker, window , window2, date_start , date_end),
+    pn.Column( ticker, window , window2, date_start , menu_button),
     # pn.bind(calc_fairprice_CDF,ticker),
     # pn.bind(calc_fairprice_DnetP,ticker)),
     # pn.panel(pn.bind(get_hvplot, ticker, "2010-01-01","2023-09-01","1d")) #, sizing_mode='stretch_width')
-    pn.panel(pn.bind(get_hvplot, ticker, date_start , date_end,"5",window,window2)), #, sizing_mode='stretch_width')
+    pn.panel(pn.bind(get_hvplot, ticker, date_start , menu_button,window,window2)), #, sizing_mode='stretch_width')
     # pn.panel(pn.bind(get_income_hvplot, ticker))    #, sizing_mode='stretch_width')    
 ).servable(title="Intraday Price Action - Pattern Detection")
